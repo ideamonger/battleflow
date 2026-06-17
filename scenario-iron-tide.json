@@ -1,0 +1,746 @@
+{
+  "ontology": "battleflow.v0.1",
+  "metadata": {
+    "title": "Operation IRON TIDE",
+    "subtitle": "Fictional USMC amphibious force vs. PLA combined-arms brigade training scenario",
+    "createdFor": "Battleflow MVP",
+    "coordinateSystem": {
+      "type": "local-grid",
+      "units": "kilometers",
+      "xAxis": "west-to-east",
+      "yAxis": "south-to-north",
+      "origin": {
+        "latitude": 14.9800,
+        "longitude": 145.6400
+      },
+      "note": "Local grid coordinates are scenario coordinates; lat/lon are derived for display."
+    },
+    "sourceNotes": [
+      "Seeded from Operation_Iron_Tide_Dataset.xlsx, documentation.docx, and Operation_Iron_Tide_COA_Condensed.docx.",
+      "Additional unit entries and objective locations are transparent planning assumptions derived from the attached documentation.",
+      "Combat values are relative simulation scores, not real-world classified measures."
+    ]
+  },
+  "simulation": {
+    "startTime": "2026-06-17T06:00:00Z",
+    "horizonHours": 72,
+    "timeStepMinutes": 10,
+    "commandLevelMinimum": "company",
+    "speedModes": {
+      "realTime": 1,
+      "accelerated": 60,
+      "fast": 360,
+      "batch": 0
+    },
+    "assumptions": {
+      "gpsAvailable": true,
+      "weather": "permissive",
+      "noExternalReinforcementsFirstHours": 72,
+      "noNuclearWeapons": true
+    }
+  },
+  "terrain": {
+    "map": {
+      "widthKm": 32,
+      "heightKm": 18,
+      "cellKm": 1
+    },
+    "globalAir": {
+      "visibilityKm": 12,
+      "cloudBaseM": 1200,
+      "windKph": 18,
+      "weather": "permissive tropical maritime",
+      "airDensity": "standard",
+      "stormRisk": 0.08
+    },
+    "globalWater": {
+      "waveHeightM": 0.9,
+      "windKph": 18,
+      "depthM": 45,
+      "currentKph": 2.2,
+      "buoyancy": 0.92
+    },
+    "terrainZones": [
+      {
+        "id": "water-fringe",
+        "domain": "water",
+        "name": "Littoral Water",
+        "bounds": { "xMin": 0, "xMax": 32, "yMin": 0, "yMax": 2 },
+        "water": { "waveHeightM": 1.0, "depthM": 55, "currentKph": 2.4, "buoyancy": 0.92 },
+        "movement": 0.95,
+        "attackModifier": -0.05
+      },
+      {
+        "id": "eastern-littoral",
+        "domain": "land",
+        "name": "Eastern Littoral",
+        "bounds": { "xMin": 0, "xMax": 6, "yMin": 2, "yMax": 8 },
+        "land": {
+          "soil": "sand and coral",
+          "accessibility": 0.62,
+          "use": "landing beaches",
+          "altitudeM": 8,
+          "cover": 0.12
+        },
+        "movement": 0.68,
+        "attackModifier": -0.30
+      },
+      {
+        "id": "airfield-corridor",
+        "domain": "land",
+        "name": "Airfield Corridor",
+        "bounds": { "xMin": 6, "xMax": 13, "yMin": 8, "yMax": 14 },
+        "land": {
+          "soil": "compacted volcanic loam",
+          "accessibility": 0.92,
+          "use": "airfield road junction",
+          "altitudeM": 72,
+          "cover": 0.18
+        },
+        "movement": 0.95,
+        "attackModifier": 0
+      },
+      {
+        "id": "sentinel-port",
+        "domain": "land",
+        "name": "Sentinel Port",
+        "bounds": { "xMin": 14, "xMax": 19, "yMin": 2, "yMax": 7 },
+        "land": {
+          "soil": "paved and reclaimed harbor ground",
+          "accessibility": 0.84,
+          "use": "port and built environment",
+          "altitudeM": 12,
+          "cover": 0.25
+        },
+        "movement": 0.82,
+        "attackModifier": -0.20
+      },
+      {
+        "id": "central-highlands",
+        "domain": "land",
+        "name": "Central Highlands",
+        "bounds": { "xMin": 10, "xMax": 24, "yMin": 9, "yMax": 18 },
+        "land": {
+          "soil": "rocky forested ridge",
+          "accessibility": 0.50,
+          "use": "forested high ground",
+          "altitudeM": 285,
+          "cover": 0.42
+        },
+        "movement": 0.55,
+        "attackModifier": 0.10
+      },
+      {
+        "id": "open-interior",
+        "domain": "land",
+        "name": "Open Interior",
+        "bounds": { "xMin": 4, "xMax": 28, "yMin": 4, "yMax": 13 },
+        "land": {
+          "soil": "mixed loam",
+          "accessibility": 0.78,
+          "use": "arable land and secondary roads",
+          "altitudeM": 48,
+          "cover": 0.20
+        },
+        "movement": 0.78,
+        "attackModifier": 0
+      }
+    ],
+    "feasibleStartingAreas": {
+      "Blue": {
+        "id": "blue-start",
+        "name": "Blue amphibious approach and Red Beach lodgment",
+        "bounds": { "xMin": 0, "xMax": 4.5, "yMin": 3, "yMax": 7.5 }
+      },
+      "Red": {
+        "id": "red-start",
+        "name": "Red interior defense belt",
+        "bounds": { "xMin": 5, "xMax": 22, "yMin": 4, "yMax": 15.5 }
+      }
+    },
+    "objectives": [
+      { "id": "OBJ001", "name": "Red Beach", "type": "Landing Zone", "xKm": 3, "yKm": 5, "strategicValue": 9, "control": "Contested" },
+      { "id": "OBJ002", "name": "Airfield Alpha", "type": "Airfield", "xKm": 9, "yKm": 11, "strategicValue": 10, "control": "Red" },
+      { "id": "OBJ003", "name": "Sentinel Port", "type": "Port", "xKm": 16, "yKm": 4, "strategicValue": 10, "control": "Red" },
+      { "id": "OBJ004", "name": "Missile Ridge", "type": "High Ground", "xKm": 18, "yKm": 13, "strategicValue": 8, "control": "Red" },
+      { "id": "OBJ005", "name": "Command Hill", "type": "C2 Node", "xKm": 20, "yKm": 12, "strategicValue": 8, "control": "Red" },
+      { "id": "OBJ006", "name": "Hill 402", "type": "Observation", "xKm": 12, "yKm": 14, "strategicValue": 6, "control": "Red" }
+    ]
+  },
+  "forces": [
+    {
+      "side": "Blue",
+      "name": "USMC Amphibious Task Force",
+      "doctrine": "risk-hedged lodgment and two-axis pressure",
+      "color": "#1d6fd6"
+    },
+    {
+      "side": "Red",
+      "name": "31st Combined Arms Brigade",
+      "doctrine": "island defense with fires, air defense, drones, and counterattack",
+      "color": "#c73a3a"
+    }
+  ],
+  "units": [
+    {
+      "id": "BLUE-MAGTF",
+      "side": "Blue",
+      "parent": null,
+      "name": "MAGTF Command Element",
+      "echelon": "brigade",
+      "domain": "land",
+      "subunits": 4,
+      "location": { "xKm": 2, "yKm": 5, "frontageKm": 1.2, "depthKm": 0.8, "altitudeM": 6 },
+      "capabilities": {
+        "role": "C2",
+        "personnel": 160,
+        "combatPower": 16,
+        "firepower": 5,
+        "mobility": 8,
+        "readiness": 95,
+        "morale": 90,
+        "supplies": { "ammo": 86, "fuel": 90, "sustainment": 88 },
+        "weapons": [
+          { "name": "organic security", "rangeKm": 1.2, "rateOfFire": 2, "destructivePower": 2, "ammo": 70 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-BHQ-1", "startMinute": 0, "arriveByMinute": 180, "task": "Coordinate landing", "destination": { "xKm": 3, "yKm": 5 }, "speedKph": 8, "directionDeg": 90, "onFailure": "Hold beachhead C2 node" }
+      ]
+    },
+    {
+      "id": "BLUE-BLT25",
+      "side": "Blue",
+      "parent": "BLUE-MAGTF",
+      "name": "BLT-2/5",
+      "echelon": "battalion",
+      "domain": "land",
+      "subunits": 6,
+      "location": { "xKm": 2.2, "yKm": 4.8, "frontageKm": 2.0, "depthKm": 0.9, "altitudeM": 5 },
+      "capabilities": {
+        "role": "Ground Combat Element",
+        "personnel": 840,
+        "combatPower": 66,
+        "firepower": 38,
+        "mobility": 7,
+        "readiness": 96,
+        "morale": 92,
+        "supplies": { "ammo": 91, "fuel": 87, "sustainment": 86 },
+        "weapons": [
+          { "name": "rifle and machine-gun fires", "rangeKm": 1.5, "rateOfFire": 8, "destructivePower": 7, "ammo": 90 },
+          { "name": "mortars", "rangeKm": 5.5, "rateOfFire": 3, "destructivePower": 10, "ammo": 76 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-BLT-1", "startMinute": 0, "arriveByMinute": 240, "task": "Secure lodgment", "destination": { "xKm": 3, "yKm": 5 }, "speedKph": 8, "directionDeg": 90, "onFailure": "Defend landing zone" }
+      ]
+    },
+    {
+      "id": "US002",
+      "side": "Blue",
+      "parent": "BLUE-BLT25",
+      "name": "Alpha Company",
+      "echelon": "company",
+      "domain": "land",
+      "subunits": 3,
+      "location": { "xKm": 1, "yKm": 4, "frontageKm": 0.75, "depthKm": 0.35, "altitudeM": 4 },
+      "capabilities": {
+        "role": "Infantry",
+        "personnel": 180,
+        "combatPower": 20,
+        "firepower": 12,
+        "mobility": 7,
+        "readiness": 98,
+        "morale": 94,
+        "supplies": { "ammo": 92, "fuel": 95, "sustainment": 90 },
+        "weapons": [
+          { "name": "small arms", "rangeKm": 0.8, "rateOfFire": 8, "destructivePower": 5, "ammo": 92 },
+          { "name": "Javelin team", "rangeKm": 2.5, "rateOfFire": 1, "destructivePower": 14, "ammo": 55 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-A-1", "startMinute": 0, "arriveByMinute": 120, "task": "Assault Red Beach", "destination": { "xKm": 3, "yKm": 5 }, "speedKph": 7, "directionDeg": 72, "onFailure": "Fix beach defenses and request fires" }
+      ]
+    },
+    {
+      "id": "US003",
+      "side": "Blue",
+      "parent": "BLUE-BLT25",
+      "name": "Bravo Company",
+      "echelon": "company",
+      "domain": "land",
+      "subunits": 3,
+      "location": { "xKm": 1, "yKm": 5, "frontageKm": 0.75, "depthKm": 0.35, "altitudeM": 4 },
+      "capabilities": {
+        "role": "Infantry",
+        "personnel": 180,
+        "combatPower": 20,
+        "firepower": 12,
+        "mobility": 7,
+        "readiness": 98,
+        "morale": 94,
+        "supplies": { "ammo": 95, "fuel": 97, "sustainment": 92 },
+        "weapons": [
+          { "name": "small arms", "rangeKm": 0.8, "rateOfFire": 8, "destructivePower": 5, "ammo": 95 },
+          { "name": "Javelin team", "rangeKm": 2.5, "rateOfFire": 1, "destructivePower": 14, "ammo": 55 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-B-1", "startMinute": 0, "arriveByMinute": 120, "task": "Assault Red Beach", "destination": { "xKm": 3.3, "yKm": 5.4 }, "speedKph": 7, "directionDeg": 70, "onFailure": "Secure alternate beach exit" }
+      ]
+    },
+    {
+      "id": "BLUE-CHARLIE",
+      "side": "Blue",
+      "parent": "BLUE-BLT25",
+      "name": "Charlie Company",
+      "echelon": "company",
+      "domain": "land",
+      "subunits": 3,
+      "location": { "xKm": 1.3, "yKm": 6.2, "frontageKm": 0.7, "depthKm": 0.35, "altitudeM": 5 },
+      "capabilities": {
+        "role": "Infantry reserve",
+        "personnel": 175,
+        "combatPower": 18,
+        "firepower": 10,
+        "mobility": 7,
+        "readiness": 96,
+        "morale": 90,
+        "supplies": { "ammo": 88, "fuel": 91, "sustainment": 89 },
+        "weapons": [
+          { "name": "small arms", "rangeKm": 0.8, "rateOfFire": 7, "destructivePower": 5, "ammo": 88 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-C-1", "startMinute": 120, "arriveByMinute": 360, "task": "Reserve for branch", "destination": { "xKm": 4.2, "yKm": 6 }, "speedKph": 6, "directionDeg": 78, "onFailure": "Protect C2 and casualty collection" }
+      ]
+    },
+    {
+      "id": "BLUE-WEAPONS",
+      "side": "Blue",
+      "parent": "BLUE-BLT25",
+      "name": "Weapons Company",
+      "echelon": "company",
+      "domain": "land",
+      "subunits": 4,
+      "location": { "xKm": 1.7, "yKm": 4.5, "frontageKm": 0.8, "depthKm": 0.4, "altitudeM": 5 },
+      "capabilities": {
+        "role": "Fires support",
+        "personnel": 155,
+        "combatPower": 23,
+        "firepower": 20,
+        "mobility": 6,
+        "readiness": 95,
+        "morale": 90,
+        "supplies": { "ammo": 85, "fuel": 86, "sustainment": 84 },
+        "weapons": [
+          { "name": "heavy machine guns", "rangeKm": 1.8, "rateOfFire": 6, "destructivePower": 8, "ammo": 86 },
+          { "name": "81mm mortars", "rangeKm": 5.6, "rateOfFire": 3, "destructivePower": 11, "ammo": 78 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-W-1", "startMinute": 30, "arriveByMinute": 240, "task": "Support beachhead", "destination": { "xKm": 3.6, "yKm": 5.1 }, "speedKph": 6, "directionDeg": 82, "onFailure": "Establish support by fire from surf line" }
+      ]
+    },
+    {
+      "id": "BLUE-RECON",
+      "side": "Blue",
+      "parent": "BLUE-MAGTF",
+      "name": "Recon Platoon",
+      "echelon": "platoon",
+      "domain": "land",
+      "subunits": 4,
+      "location": { "xKm": 2.4, "yKm": 6.6, "frontageKm": 0.45, "depthKm": 0.25, "altitudeM": 6 },
+      "capabilities": {
+        "role": "ISR",
+        "personnel": 42,
+        "combatPower": 9,
+        "firepower": 5,
+        "mobility": 9,
+        "readiness": 97,
+        "morale": 92,
+        "supplies": { "ammo": 75, "fuel": 80, "sustainment": 82 },
+        "weapons": [
+          { "name": "recon team weapons", "rangeKm": 0.7, "rateOfFire": 5, "destructivePower": 4, "ammo": 75 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-R-1", "startMinute": 60, "arriveByMinute": 300, "task": "Probe toward Airfield Alpha", "destination": { "xKm": 7.5, "yKm": 9.8 }, "speedKph": 12, "directionDeg": 48, "onFailure": "Screen lodgment flank" }
+      ]
+    },
+    {
+      "id": "BLUE-LAV",
+      "side": "Blue",
+      "parent": "BLUE-MAGTF",
+      "name": "LAV Company",
+      "echelon": "company",
+      "domain": "land",
+      "subunits": 3,
+      "location": { "xKm": 2.1, "yKm": 3.6, "frontageKm": 0.9, "depthKm": 0.45, "altitudeM": 5 },
+      "capabilities": {
+        "role": "Armored reconnaissance",
+        "personnel": 115,
+        "combatPower": 25,
+        "firepower": 18,
+        "mobility": 9,
+        "readiness": 93,
+        "morale": 88,
+        "supplies": { "ammo": 82, "fuel": 76, "sustainment": 80 },
+        "weapons": [
+          { "name": "25mm cannon", "rangeKm": 2.2, "rateOfFire": 5, "destructivePower": 11, "ammo": 82 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-LAV-1", "startMinute": 180, "arriveByMinute": 720, "task": "Two-axis pressure toward port", "destination": { "xKm": 12, "yKm": 5.5 }, "speedKph": 18, "directionDeg": 88, "onFailure": "Return to mobile reserve" }
+      ]
+    },
+    {
+      "id": "BLUE-HIMARS",
+      "side": "Blue",
+      "parent": "BLUE-MAGTF",
+      "name": "HIMARS Detachment",
+      "echelon": "battery",
+      "domain": "land",
+      "subunits": 2,
+      "location": { "xKm": 0.8, "yKm": 3.3, "frontageKm": 0.6, "depthKm": 0.4, "altitudeM": 3 },
+      "capabilities": {
+        "role": "Precision fires",
+        "personnel": 46,
+        "combatPower": 28,
+        "firepower": 26,
+        "mobility": 7,
+        "readiness": 92,
+        "morale": 85,
+        "supplies": { "ammo": 65, "fuel": 82, "sustainment": 80 },
+        "weapons": [
+          { "name": "GMLRS", "rangeKm": 70, "rateOfFire": 1, "destructivePower": 32, "ammo": 65 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-HIMARS-1", "startMinute": 240, "arriveByMinute": 480, "task": "Suppress Red fires", "destination": { "xKm": 4.1, "yKm": 5.9 }, "speedKph": 12, "directionDeg": 80, "onFailure": "Displace and conserve rockets" }
+      ]
+    },
+    {
+      "id": "BLUE-F35",
+      "side": "Blue",
+      "parent": "BLUE-MAGTF",
+      "name": "F-35B Detachment",
+      "echelon": "flight",
+      "domain": "air",
+      "subunits": 4,
+      "location": { "xKm": 2.5, "yKm": 2.2, "frontageKm": 4.0, "depthKm": 2.0, "altitudeM": 3000 },
+      "capabilities": {
+        "role": "Air strike and ISR",
+        "personnel": 24,
+        "combatPower": 30,
+        "firepower": 28,
+        "mobility": 10,
+        "readiness": 94,
+        "morale": 88,
+        "supplies": { "ammo": 72, "fuel": 86, "sustainment": 84 },
+        "weapons": [
+          { "name": "precision strike package", "rangeKm": 90, "rateOfFire": 1, "destructivePower": 30, "ammo": 72 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-F35-1", "startMinute": 0, "arriveByMinute": 60, "task": "Strike HQ-9 if confirmed", "destination": { "xKm": 9, "yKm": 11 }, "speedKph": 650, "directionDeg": 55, "onFailure": "ISR orbit outside HQ-9 envelope" }
+      ]
+    },
+    {
+      "id": "RED-31CAB",
+      "side": "Red",
+      "parent": null,
+      "name": "31st Combined Arms Brigade HQ",
+      "echelon": "brigade",
+      "domain": "land",
+      "subunits": 8,
+      "location": { "xKm": 17, "yKm": 12, "frontageKm": 1.3, "depthKm": 0.8, "altitudeM": 140 },
+      "capabilities": {
+        "role": "C2",
+        "personnel": 180,
+        "combatPower": 18,
+        "firepower": 6,
+        "mobility": 7,
+        "readiness": 96,
+        "morale": 90,
+        "supplies": { "ammo": 88, "fuel": 90, "sustainment": 90 },
+        "weapons": [
+          { "name": "security weapons", "rangeKm": 1.2, "rateOfFire": 2, "destructivePower": 3, "ammo": 88 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-RHQ-1", "startMinute": 0, "arriveByMinute": 600, "task": "Defend island", "destination": { "xKm": 17, "yKm": 12 }, "speedKph": 0, "directionDeg": 180, "onFailure": "Displace to Command Hill" }
+      ]
+    },
+    {
+      "id": "CN002",
+      "side": "Red",
+      "parent": "RED-31CAB",
+      "name": "1st Combined Arms Battalion",
+      "echelon": "battalion",
+      "domain": "land",
+      "subunits": 4,
+      "location": { "xKm": 8, "yKm": 12, "frontageKm": 2.1, "depthKm": 1.1, "altitudeM": 76 },
+      "capabilities": {
+        "role": "Mechanized",
+        "personnel": 450,
+        "combatPower": 30,
+        "firepower": 24,
+        "mobility": 8,
+        "readiness": 95,
+        "morale": 88,
+        "supplies": { "ammo": 88, "fuel": 84, "sustainment": 86 },
+        "weapons": [
+          { "name": "IFV cannons", "rangeKm": 2.5, "rateOfFire": 5, "destructivePower": 14, "ammo": 88 },
+          { "name": "ATGM teams", "rangeKm": 4.0, "rateOfFire": 1, "destructivePower": 20, "ammo": 64 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-1CAB-1", "startMinute": 0, "arriveByMinute": 720, "task": "Defend Airfield Alpha", "destination": { "xKm": 9, "yKm": 11 }, "speedKph": 8, "directionDeg": 230, "onFailure": "Counterattack Red Beach corridor" }
+      ]
+    },
+    {
+      "id": "RED-2CAB",
+      "side": "Red",
+      "parent": "RED-31CAB",
+      "name": "2nd Combined Arms Battalion",
+      "echelon": "battalion",
+      "domain": "land",
+      "subunits": 4,
+      "location": { "xKm": 6.8, "yKm": 8.5, "frontageKm": 1.8, "depthKm": 1.0, "altitudeM": 35 },
+      "capabilities": {
+        "role": "Beach sector defense",
+        "personnel": 410,
+        "combatPower": 27,
+        "firepower": 20,
+        "mobility": 7,
+        "readiness": 94,
+        "morale": 86,
+        "supplies": { "ammo": 84, "fuel": 82, "sustainment": 86 },
+        "weapons": [
+          { "name": "combined arms fires", "rangeKm": 3.0, "rateOfFire": 5, "destructivePower": 13, "ammo": 84 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-2CAB-1", "startMinute": 0, "arriveByMinute": 360, "task": "Block beachhead expansion", "destination": { "xKm": 5.2, "yKm": 7.5 }, "speedKph": 8, "directionDeg": 230, "onFailure": "Delay toward central highlands" }
+      ]
+    },
+    {
+      "id": "RED-3CAB",
+      "side": "Red",
+      "parent": "RED-31CAB",
+      "name": "3rd Combined Arms Battalion",
+      "echelon": "battalion",
+      "domain": "land",
+      "subunits": 4,
+      "location": { "xKm": 18.2, "yKm": 9.8, "frontageKm": 1.8, "depthKm": 1.0, "altitudeM": 80 },
+      "capabilities": {
+        "role": "Mobile reserve",
+        "personnel": 420,
+        "combatPower": 28,
+        "firepower": 21,
+        "mobility": 8,
+        "readiness": 94,
+        "morale": 87,
+        "supplies": { "ammo": 84, "fuel": 80, "sustainment": 85 },
+        "weapons": [
+          { "name": "mechanized direct fires", "rangeKm": 3.0, "rateOfFire": 5, "destructivePower": 14, "ammo": 84 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-3CAB-1", "startMinute": 360, "arriveByMinute": 900, "task": "Counterattack weaker Blue axis", "destination": { "xKm": 12, "yKm": 6 }, "speedKph": 14, "directionDeg": 250, "onFailure": "Defend Sentinel Port" }
+      ]
+    },
+    {
+      "id": "RED-PCL181",
+      "side": "Red",
+      "parent": "RED-31CAB",
+      "name": "PCL-181 Battalion",
+      "echelon": "battalion",
+      "domain": "land",
+      "subunits": 3,
+      "location": { "xKm": 15, "yKm": 13, "frontageKm": 1.2, "depthKm": 0.8, "altitudeM": 210 },
+      "capabilities": {
+        "role": "Tube artillery",
+        "personnel": 260,
+        "combatPower": 26,
+        "firepower": 30,
+        "mobility": 6,
+        "readiness": 94,
+        "morale": 78,
+        "supplies": { "ammo": 88, "fuel": 90, "sustainment": 82 },
+        "weapons": [
+          { "name": "155mm artillery", "rangeKm": 40, "rateOfFire": 2, "destructivePower": 26, "ammo": 88 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-PCL-1", "startMinute": 0, "arriveByMinute": 180, "task": "Interdict beachhead", "destination": { "xKm": 14.5, "yKm": 13.4 }, "speedKph": 0, "directionDeg": 210, "onFailure": "Displace after firing" }
+      ]
+    },
+    {
+      "id": "RED-PHL191",
+      "side": "Red",
+      "parent": "RED-31CAB",
+      "name": "PHL-191 Battalion",
+      "echelon": "battalion",
+      "domain": "land",
+      "subunits": 2,
+      "location": { "xKm": 19.5, "yKm": 13.4, "frontageKm": 1.0, "depthKm": 0.8, "altitudeM": 250 },
+      "capabilities": {
+        "role": "Rocket fires",
+        "personnel": 190,
+        "combatPower": 32,
+        "firepower": 36,
+        "mobility": 6,
+        "readiness": 93,
+        "morale": 84,
+        "supplies": { "ammo": 70, "fuel": 78, "sustainment": 80 },
+        "weapons": [
+          { "name": "long-range rockets", "rangeKm": 90, "rateOfFire": 1, "destructivePower": 35, "ammo": 70 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-PHL-1", "startMinute": 90, "arriveByMinute": 180, "task": "Rocket strike beachhead", "destination": { "xKm": 19.5, "yKm": 13.4 }, "speedKph": 0, "directionDeg": 215, "onFailure": "Conserve rockets for airfield corridor" }
+      ]
+    },
+    {
+      "id": "RED-HQ9",
+      "side": "Red",
+      "parent": "RED-31CAB",
+      "name": "HQ-9 Battalion",
+      "echelon": "battalion",
+      "domain": "land",
+      "subunits": 8,
+      "location": { "xKm": 9.3, "yKm": 11.2, "frontageKm": 1.0, "depthKm": 0.8, "altitudeM": 78 },
+      "capabilities": {
+        "role": "Air defense",
+        "personnel": 170,
+        "combatPower": 26,
+        "firepower": 34,
+        "mobility": 5,
+        "readiness": 92,
+        "morale": 86,
+        "supplies": { "ammo": 74, "fuel": 76, "sustainment": 82 },
+        "weapons": [
+          { "name": "HQ-9 SAM", "rangeKm": 120, "rateOfFire": 1, "destructivePower": 32, "ammo": 74 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-HQ9-1", "startMinute": 0, "arriveByMinute": 600, "task": "Deny Blue air over airfield", "destination": { "xKm": 9.3, "yKm": 11.2 }, "speedKph": 0, "directionDeg": 200, "onFailure": "Displace toward Missile Ridge" }
+      ]
+    },
+    {
+      "id": "RED-DF17",
+      "side": "Red",
+      "parent": "RED-31CAB",
+      "name": "DF-17 Detachment",
+      "echelon": "battery",
+      "domain": "land",
+      "subunits": 4,
+      "location": { "xKm": 20.4, "yKm": 12.4, "frontageKm": 0.9, "depthKm": 0.6, "altitudeM": 220 },
+      "capabilities": {
+        "role": "Theater missile threat",
+        "personnel": 90,
+        "combatPower": 34,
+        "firepower": 42,
+        "mobility": 6,
+        "readiness": 91,
+        "morale": 88,
+        "supplies": { "ammo": 55, "fuel": 72, "sustainment": 75 },
+        "weapons": [
+          { "name": "DF-17 missile", "rangeKm": 1500, "rateOfFire": 0.4, "destructivePower": 48, "ammo": 55 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-DF17-1", "startMinute": 0, "arriveByMinute": 1440, "task": "Preserve missile threat", "destination": { "xKm": 20.4, "yKm": 12.4 }, "speedKph": 0, "directionDeg": 180, "onFailure": "Displace under decoy cover" }
+      ]
+    },
+    {
+      "id": "RED-YJ18",
+      "side": "Red",
+      "parent": "RED-31CAB",
+      "name": "YJ-18 Battery",
+      "echelon": "battery",
+      "domain": "land",
+      "subunits": 8,
+      "location": { "xKm": 16.5, "yKm": 5.2, "frontageKm": 0.8, "depthKm": 0.6, "altitudeM": 18 },
+      "capabilities": {
+        "role": "Anti-ship missile",
+        "personnel": 95,
+        "combatPower": 24,
+        "firepower": 30,
+        "mobility": 5,
+        "readiness": 93,
+        "morale": 84,
+        "supplies": { "ammo": 68, "fuel": 74, "sustainment": 80 },
+        "weapons": [
+          { "name": "YJ-18 anti-ship missile", "rangeKm": 540, "rateOfFire": 0.5, "destructivePower": 38, "ammo": 68 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-YJ18-1", "startMinute": 0, "arriveByMinute": 720, "task": "Threaten amphibious shipping", "destination": { "xKm": 16.5, "yKm": 5.2 }, "speedKph": 0, "directionDeg": 240, "onFailure": "Defend Sentinel Port" }
+      ]
+    },
+    {
+      "id": "RED-ISR",
+      "side": "Red",
+      "parent": "RED-31CAB",
+      "name": "ISR Drone Battalion",
+      "echelon": "battalion",
+      "domain": "air",
+      "subunits": 12,
+      "location": { "xKm": 13.2, "yKm": 10.2, "frontageKm": 4.0, "depthKm": 2.0, "altitudeM": 1800 },
+      "capabilities": {
+        "role": "ISR and targeting",
+        "personnel": 120,
+        "combatPower": 18,
+        "firepower": 8,
+        "mobility": 10,
+        "readiness": 94,
+        "morale": 82,
+        "supplies": { "ammo": 50, "fuel": 85, "sustainment": 82 },
+        "weapons": [
+          { "name": "drone strike", "rangeKm": 35, "rateOfFire": 1, "destructivePower": 14, "ammo": 50 }
+        ]
+      },
+      "orders": [
+        { "id": "ORD-ISR-1", "startMinute": 0, "arriveByMinute": 300, "task": "Find Blue main effort", "destination": { "xKm": 6, "yKm": 6 }, "speedKph": 90, "directionDeg": 240, "onFailure": "Orbit airfield corridor" }
+      ]
+    }
+  ],
+  "coaLibrary": [
+    {
+      "id": "COA1",
+      "name": "Risk-prone: High-tempo airfield thrust",
+      "posture": "opportunity-seeking",
+      "concept": "Rapidly convert amphibious entry into a direct push toward Airfield Alpha.",
+      "fragility": "Surviving Red fires, air defense, and beachhead disruption.",
+      "risk": 0.72,
+      "baseUtility": { "likely": 78, "dangerous": 34, "deceptive": 42, "adaptive": 50 }
+    },
+    {
+      "id": "COA2",
+      "name": "Risk-averse: Secure lodgment first",
+      "posture": "maximin",
+      "concept": "Establish a defensible beachhead, improve C2/logistics, then phase inland.",
+      "fragility": "Loss of tempo while Red hardens the airfield and port.",
+      "risk": 0.34,
+      "baseUtility": { "likely": 61, "dangerous": 60, "deceptive": 55, "adaptive": 58 }
+    },
+    {
+      "id": "COA3",
+      "name": "Risk-hedged: Lodgment plus two-axis pressure",
+      "posture": "minimax-regret",
+      "concept": "Secure enough lodgment while applying reversible pressure toward Airfield Alpha and Sentinel Port.",
+      "fragility": "C2 and ISR must support conditional branches without splitting unsupported fragments.",
+      "risk": 0.46,
+      "baseUtility": { "likely": 74, "dangerous": 64, "deceptive": 66, "adaptive": 70 }
+    }
+  ],
+  "redResponses": [
+    { "id": "likely", "name": "Likely", "probability": 0.38, "description": "Mass fires and drones on beachhead and airfield corridor." },
+    { "id": "dangerous", "name": "Most Dangerous", "probability": 0.22, "description": "Feigned weakness, then counterstroke against logistics/C2." },
+    { "id": "deceptive", "name": "Deceptive", "probability": 0.20, "description": "Decoys and false signatures around Command Hill and DF-17." },
+    { "id": "adaptive", "name": "Adaptive", "probability": 0.20, "description": "Shift fires/reserve toward whichever Blue axis is weaker." }
+  ]
+}

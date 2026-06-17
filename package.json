@@ -1,0 +1,10 @@
+{
+  "name": "battleflow-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8792",
+    "check": "node --check app.js && node --check battleflow-engine.js"
+  }
+}

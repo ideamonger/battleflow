@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Battleflow</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">B</div>
+          <div>
+            <h1>Battleflow</h1>
+            <p id="scenarioTitle">Operation IRON TIDE</p>
+          </div>
+        </div>
+        <div class="clock-strip">
+          <span id="clock">Loading</span>
+          <span id="elapsed">T+0h 00m</span>
+          <span id="runState">Paused</span>
+        </div>
+        <div class="control-strip">
+          <button id="resetBtn" type="button">Reset</button>
+          <button id="stepBtn" type="button">Step</button>
+          <button id="playBtn" type="button">Play</button>
+          <select id="modeSelect" aria-label="Run mode">
+            <option value="realTime">Real time</option>
+            <option value="accelerated" selected>Accelerated</option>
+            <option value="fast">Fast</option>
+          </select>
+          <button id="batchBtn" type="button">Batch</button>
+          <label class="file-button" for="scenarioFile">Load JSON</label>
+          <input id="scenarioFile" type="file" accept="application/json,.json">
+          <button id="exportBtn" type="button">Export</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="map-panel" aria-label="Simulation map">
+          <div class="map-header">
+            <div>
+              <h2>Operational Map</h2>
+              <p id="mapSubtitle">Local grid, kilometers</p>
+            </div>
+            <div class="legend" id="legend"></div>
+          </div>
+          <div class="map-wrap">
+            <canvas id="mapCanvas" width="1280" height="720"></canvas>
+            <div id="mapHint" class="map-hint">Select</div>
+          </div>
+          <div class="metric-rack" id="metrics"></div>
+        </section>
+
+        <aside class="right-panel">
+          <nav class="tabs" aria-label="Battleflow panels">
+            <button type="button" class="tab active" data-tab="forces">Forces</button>
+            <button type="button" class="tab" data-tab="orders">Orders</button>
+            <button type="button" class="tab" data-tab="coa">COA</button>
+            <button type="button" class="tab" data-tab="data">Data</button>
+            <button type="button" class="tab" data-tab="ai">AI</button>
+          </nav>
+
+          <section id="tab-forces" class="tab-panel active">
+            <div id="validation" class="validation"></div>
+            <div id="selectedUnit" class="selected-unit"></div>
+            <div class="section-title">
+              <h2>Force Tree</h2>
+              <span id="unitCount"></span>
+            </div>
+            <div id="forceTree" class="force-tree"></div>
+          </section>
+
+          <section id="tab-orders" class="tab-panel">
+            <div class="section-title">
+              <h2>Issue Order</h2>
+              <span id="orderSide">Blue / Red</span>
+            </div>
+            <form id="orderForm" class="order-form">
+              <label>
+                Unit
+                <select id="orderUnit"></select>
+              </label>
+              <label>
+                Task
+                <select id="orderTask">
+                  <option>Move</option>
+                  <option>Assault</option>
+                  <option>Defend</option>
+                  <option>Secure</option>
+                  <option>Recon</option>
+                  <option>Support</option>
+                  <option>Strike</option>
+                  <option>Withdraw</option>
+                </select>
+              </label>
+              <div class="grid-2">
+                <label>
+                  X km
+                  <input id="orderX" type="number" min="0" max="32" step="0.1">
+                </label>
+                <label>
+                  Y km
+                  <input id="orderY" type="number" min="0" max="18" step="0.1">
+                </label>
+              </div>
+              <div class="grid-2">
+                <label>
+                  Start T+ min
+                  <input id="orderStart" type="number" min="0" step="10">
+                </label>
+                <label>
+                  Arrive T+ min
+                  <input id="orderArrive" type="number" min="0" step="10">
+                </label>
+              </div>
+              <div class="grid-2">
+                <label>
+                  Speed kph
+                  <input id="orderSpeed" type="number" min="0" step="1">
+                </label>
+                <label>
+                  Direction deg
+                  <input id="orderDirection" type="number" min="0" max="359" step="1">
+                </label>
+              </div>
+              <label>
+                On failure
+                <input id="orderFailure" type="text">
+              </label>
+              <button type="submit" class="primary">Send Order</button>
+            </form>
+            <div class="section-title">
+              <h2>Order Queue</h2>
+              <span id="queueCount"></span>
+            </div>
+            <div id="orderQueue" class="order-queue"></div>
+          </section>
+
+          <section id="tab-coa" class="tab-panel">
+            <div class="section-title">
+              <h2>COA Matrix</h2>
+              <span id="coaBest"></span>
+            </div>
+            <div id="coaScores" class="coa-scores"></div>
+            <div id="coaMatrix" class="matrix"></div>
+          </section>
+
+          <section id="tab-data" class="tab-panel">
+            <div class="section-title">
+              <h2>Ontology</h2>
+              <span>battleflow.v0.1</span>
+            </div>
+            <textarea id="ontologyView" spellcheck="false"></textarea>
+            <div class="button-row">
+              <button id="copyOntologyBtn" type="button">Copy</button>
+              <button id="applyOntologyBtn" type="button">Apply JSON</button>
+            </div>
+          </section>
+
+          <section id="tab-ai" class="tab-panel">
+            <div class="section-title">
+              <h2>Order Parser</h2>
+              <span id="aiStatus">Local</span>
+            </div>
+            <label>
+              Natural order
+              <textarea id="naturalOrder" spellcheck="true">Alpha Company secure Airfield Alpha by 8 hours, start at 2 hours, speed 8 kph. If fail, defend the lodgment.</textarea>
+            </label>
+            <div class="grid-2">
+              <label>
+                Endpoint
+                <input id="apiEndpoint" type="text" value="https://api.openai.com/v1/responses">
+              </label>
+              <label>
+                Model
+                <input id="apiModel" type="text" value="gpt-4.1-mini">
+              </label>
+            </div>
+            <label>
+              API key
+              <input id="apiKey" type="password" autocomplete="off">
+            </label>
+            <div class="button-row">
+              <button id="localParseBtn" type="button">Parse Local</button>
+              <button id="openAiParseBtn" type="button">Parse API</button>
+              <button id="applyParsedBtn" type="button" class="primary">Apply</button>
+            </div>
+            <pre id="parsedOrder" class="parsed-order"></pre>
+          </section>
+        </aside>
+      </main>
+
+      <footer class="event-panel">
+        <div class="section-title">
+          <h2>Event Log</h2>
+          <span id="eventCount"></span>
+        </div>
+        <div id="eventLog" class="event-log"></div>
+      </footer>
+    </div>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
