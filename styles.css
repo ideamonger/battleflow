@@ -37,7 +37,8 @@ textarea {
 }
 
 button,
-.file-button {
+.file-button,
+.control-link {
   border: 1px solid var(--line);
   background: #ffffff;
   color: var(--ink);
@@ -45,10 +46,14 @@ button,
   padding: 0 12px;
   border-radius: 6px;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-grid;
+  place-items: center;
 }
 
 button:hover,
-.file-button:hover {
+.file-button:hover,
+.control-link:hover {
   border-color: #8ea099;
   background: #f2f6f4;
 }
@@ -614,6 +619,86 @@ tr:last-child td {
   text-transform: uppercase;
 }
 
+.manual-body {
+  background: var(--bg);
+}
+
+.manual-page {
+  width: min(980px, calc(100vw - 24px));
+  margin: 12px auto 48px;
+  display: grid;
+  gap: 12px;
+}
+
+.manual-header,
+.manual-section {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.manual-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+}
+
+.manual-header h1 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: 0;
+}
+
+.manual-header p {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.manual-section {
+  padding: 18px;
+}
+
+.manual-section h2 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.manual-section p {
+  margin: 8px 0 0;
+  color: #26352f;
+  line-height: 1.55;
+}
+
+.manual-section ul,
+.manual-section ol {
+  margin: 10px 0 0;
+  padding-left: 24px;
+  color: #26352f;
+  line-height: 1.55;
+}
+
+.manual-section table {
+  margin-top: 12px;
+}
+
+.manual-section code {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+}
+
+.manual-section td:first-child {
+  width: 26%;
+  font-weight: 750;
+}
+
 @media (max-width: 1160px) {
   .topbar {
     grid-template-columns: 1fr;
@@ -635,6 +720,10 @@ tr:last-child td {
 
   .event-log {
     grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
+
+  .manual-header {
+    grid-template-columns: 1fr;
   }
 }
 

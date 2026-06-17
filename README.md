@@ -22,6 +22,7 @@ http://127.0.0.1:8792/
 - `app.js` - UI controller, map rendering, file import/export, order parser controls.
 - `battleflow-engine.js` - deterministic simulation engine.
 - `scenario-iron-tide.json` - human-readable Battleflow ontology and seeded scenario.
+- `user-manual.html` - browser-readable user manual linked from the app interface.
 
 ## Ontology Shape
 

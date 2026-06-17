@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Battleflow User Manual</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body class="manual-body">
+    <main class="manual-page">
+      <header class="manual-header">
+        <a class="control-link" href="./index.html">Back to Battleflow</a>
+        <div>
+          <h1>Battleflow User Manual</h1>
+          <p>Minimum viable wargame simulation engine for Operation IRON TIDE.</p>
+        </div>
+      </header>
+
+      <section class="manual-section">
+        <h2>1. Purpose</h2>
+        <p>
+          Battleflow is a browser-based wargame simulation engine for exploring Blue and Red courses of
+          action against terrain, movement, weapons, readiness, morale, supply, and objective-control
+          rules. The current build is an MVP seeded with the Operation IRON TIDE scenario and a
+          transparent JSON ontology.
+        </p>
+        <p>
+          The engine is intended for experimentation, planning support, and scenario analysis. It is not
+          an authoritative combat model and does not encode classified performance data.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>2. Quick Start</h2>
+        <ol>
+          <li>Open the Battleflow site.</li>
+          <li>Review the map, objectives, and Blue/Red starting areas.</li>
+          <li>At T+0, drag units within their feasible starting areas if you want to adjust placement.</li>
+          <li>Select a unit in the force tree or on the map.</li>
+          <li>Use the Orders panel to issue a destination, timing, speed, task, and failure instruction.</li>
+          <li>Run the simulation with Step, Play, or Batch.</li>
+          <li>Use the COA panel to compare expected value, worst-case floor, regret, risk, and score.</li>
+          <li>Export the state JSON when you want to preserve a run.</li>
+        </ol>
+      </section>
+
+      <section class="manual-section">
+        <h2>3. Interface Map</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th>Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Top controls</td>
+              <td>Reset, step, play, choose speed mode, run batch, load JSON, open this manual, and export state.</td>
+            </tr>
+            <tr>
+              <td>Operational map</td>
+              <td>Displays terrain cells, objectives, starting areas, unit locations, active order paths, and selected-cell details.</td>
+            </tr>
+            <tr>
+              <td>Metrics rack</td>
+              <td>Shows Blue utility, objective score, force preservation, Red fires survival, and Blue C2 status.</td>
+            </tr>
+            <tr>
+              <td>Forces tab</td>
+              <td>Shows starting-area validation, selected-unit status, and the hierarchical Blue/Red force tree.</td>
+            </tr>
+            <tr>
+              <td>Orders tab</td>
+              <td>Issues unit orders at the configured command echelon or above.</td>
+            </tr>
+            <tr>
+              <td>COA tab</td>
+              <td>Scores the scenario against likely, dangerous, deceptive, and adaptive Red responses.</td>
+            </tr>
+            <tr>
+              <td>Data tab</td>
+              <td>Displays the editable scenario ontology JSON.</td>
+            </tr>
+            <tr>
+              <td>AI tab</td>
+              <td>Parses natural-language orders locally or through the optional OpenAI Responses API.</td>
+            </tr>
+            <tr>
+              <td>Event log</td>
+              <td>Records movement, engagements, objective changes, logistics warnings, branches, and system events.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="manual-section">
+        <h2>4. Terrain and Map</h2>
+        <p>
+          The default map is a 32 km by 18 km local grid. Terrain is synthesized from human-readable
+          zones into one-kilometer cells. Each cell records a domain, movement effect, combat modifier,
+          altitude, soil/accessibility/use data for land, water conditions for littoral zones, and global
+          air conditions.
+        </p>
+        <p>
+          Terrain effects are deliberately simple. Beaches slow movement and penalize attacks, high
+          ground improves attack effects, port and built areas impose urban friction, and water/air
+          domains use lightweight weather and sea-state modifiers.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>5. Forces and Ontology</h2>
+        <p>
+          Units are organized hierarchically with <code>parent</code> identifiers. A brigade may contain battalions,
+          battalions may contain companies, and companies may contain platoons or specialist elements.
+          The engine only needs consistent IDs and parent links.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Unit field</th>
+              <th>Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>side</code></td>
+              <td>Blue or Red.</td>
+            </tr>
+            <tr>
+              <td><code>echelon</code></td>
+              <td>Command level such as platoon, company, battery, battalion, squadron, or brigade.</td>
+            </tr>
+            <tr>
+              <td><code>domain</code></td>
+              <td>land, water/sea, or air.</td>
+            </tr>
+            <tr>
+              <td><code>location</code></td>
+              <td>Grid location, frontage, depth, and altitude.</td>
+            </tr>
+            <tr>
+              <td><code>capabilities</code></td>
+              <td>Role, personnel, combat power, firepower, mobility, readiness, morale, supplies, and weapons.</td>
+            </tr>
+            <tr>
+              <td><code>weapons</code></td>
+              <td>Weapon name, range, rate of fire, destructive power, and ammunition.</td>
+            </tr>
+            <tr>
+              <td><code>orders</code></td>
+              <td>Task, start time, arrival time, destination, speed, direction, and failure behavior.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="manual-section">
+        <h2>6. Positioning and Starting Areas</h2>
+        <p>
+          The scenario defines separate feasible starting areas for Blue and Red. At T+0, units can be
+          dragged on the map as long as they remain inside their side's starting area. Once the simulation
+          has advanced, movement should happen through orders rather than direct drag placement.
+        </p>
+        <p>
+          The Forces tab validates that initial placements are legal and that Blue and Red starting areas
+          do not overlap.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>7. Orders</h2>
+        <p>
+          Orders are issued to units at the configured command level or above. The current scenario uses
+          company as the minimum command echelon. Each order answers:
+        </p>
+        <ul>
+          <li>Where the unit should go, in local grid coordinates.</li>
+          <li>When the order starts.</li>
+          <li>When the unit should arrive.</li>
+          <li>What task it should perform.</li>
+          <li>What it should do if the order fails by the arrival time.</li>
+        </ul>
+        <p>
+          Active orders draw dashed paths on the map. If a unit misses its arrival timing, the failure
+          instruction is logged as a branch event.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>8. Simulation Modes</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Step</td>
+              <td>Advances by the scenario time step, currently 10 simulated minutes.</td>
+            </tr>
+            <tr>
+              <td>Real time</td>
+              <td>Advances slowly for observation and teaching.</td>
+            </tr>
+            <tr>
+              <td>Accelerated</td>
+              <td>Runs the simulation at a faster interactive pace.</td>
+            </tr>
+            <tr>
+              <td>Fast</td>
+              <td>Advances larger increments for quick exploration.</td>
+            </tr>
+            <tr>
+              <td>Batch</td>
+              <td>Runs the full scenario horizon as fast as possible, then presents the final state.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="manual-section">
+        <h2>9. Adjudication Rules</h2>
+        <p>
+          The MVP uses deterministic, transparent adjudication rather than hidden stochastic resolution.
+          Movement depends on unit mobility, readiness, morale, supply, terrain, air weather, or sea
+          state. Engagements depend on weapon range, destructive power, rate of fire, ammunition,
+          attacker readiness/morale, target cover, and terrain modifiers.
+        </p>
+        <p>
+          The engine updates strength, readiness, morale, ammunition, fuel, sustainment, objective
+          control, and event logs at each time step.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>10. COA Scoring</h2>
+        <p>
+          The COA panel compares the seeded courses of action against four Red responses: likely, most
+          dangerous, deceptive, and adaptive. Each COA receives:
+        </p>
+        <ul>
+          <li>Expected value across Red responses.</li>
+          <li>Worst-case floor for maximin reasoning.</li>
+          <li>Worst regret for minimax-regret reasoning.</li>
+          <li>Risk adjustment.</li>
+          <li>Composite score.</li>
+        </ul>
+        <p>
+          In the default Operation IRON TIDE setup, COA 3 is designed as the hedged minimax-regret
+          baseline, COA 2 as the maximin lodgment-first posture, and COA 1 as the opportunity-seeking
+          high-tempo thrust.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>11. Loading and Exporting Data</h2>
+        <p>
+          Use Load JSON to import another Battleflow scenario. Use Export to save the current simulation
+          state, including clock, metrics, terrain grid, objectives, units, and event log.
+        </p>
+        <p>
+          The Data tab can also apply edited scenario JSON directly. For reliable results, keep unit IDs,
+          parent links, objective IDs, terrain bounds, and command echelons consistent.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>12. Optional AI Order Parsing</h2>
+        <p>
+          The AI tab includes a local rule-based parser and an optional OpenAI Responses API parser. The
+          local parser works without network access. The API parser requires an API key and should only
+          be used in trusted local or internal testing environments because browser-side API keys are
+          visible to the page user.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>13. Troubleshooting</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Symptom</th>
+              <th>Likely cause</th>
+              <th>Fix</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Scenario does not load</td>
+              <td>The page was opened as a local file or JSON is invalid.</td>
+              <td>Serve the folder over HTTP/HTTPS and validate the JSON.</td>
+            </tr>
+            <tr>
+              <td>Unit cannot be dragged</td>
+              <td>The simulation has advanced or the target is outside the starting area.</td>
+              <td>Reset to T+0 or drag within the correct feasible starting area.</td>
+            </tr>
+            <tr>
+              <td>Order is rejected</td>
+              <td>The unit is below the command echelon minimum or fields are invalid.</td>
+              <td>Select a commandable unit and check coordinates, timing, and speed.</td>
+            </tr>
+            <tr>
+              <td>OpenAI parsing fails</td>
+              <td>Missing API key, blocked network, or API error.</td>
+              <td>Use Parse Local or configure a secure server-side proxy for public deployments.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="manual-section">
+        <h2>14. Limits</h2>
+        <p>
+          Battleflow MVP is intentionally simple. It does not model classified system performance,
+          detailed logistics networks, stochastic sensor uncertainty, command latency, full air tasking,
+          naval maneuver, civilian movement, legal review workflows, or validated casualty prediction.
+          Its value is transparency, rapid iteration, and explainable experimentation.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>
