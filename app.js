@@ -2,8 +2,7 @@ import {
   BattleflowEngine,
   formatMinutes,
   getEchelonRank,
-  localOrderParser,
-  pointDistance
+  localOrderParser
 } from "./battleflow-engine.js";
 
 const dom = {
@@ -14,6 +13,8 @@ const dom = {
   resetBtn: document.getElementById("resetBtn"),
   stepBtn: document.getElementById("stepBtn"),
   playBtn: document.getElementById("playBtn"),
+  timeScrubber: document.getElementById("timeScrubber"),
+  scrubLabel: document.getElementById("scrubLabel"),
   batchBtn: document.getElementById("batchBtn"),
   modeSelect: document.getElementById("modeSelect"),
   scenarioFile: document.getElementById("scenarioFile"),
@@ -104,8 +105,17 @@ function number(value, digits = 0) {
   return Number(value || 0).toFixed(digits);
 }
 
-function metric(label, value) {
-  return `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
+function metric(label, value, description, tone = "") {
+  return `
+    <div class="metric ${escapeHtml(tone)}">
+      <div class="metric-head">
+        <span>${escapeHtml(label)}</span>
+        <button type="button" class="metric-help" title="${escapeHtml(description)}" aria-label="${escapeHtml(label)} explanation">i</button>
+      </div>
+      <strong>${escapeHtml(value)}</strong>
+      <p>${escapeHtml(description)}</p>
+    </div>
+  `;
 }
 
 function statusText(unit) {
@@ -119,7 +129,7 @@ async function init() {
   const scenario = await response.json();
   engine = new BattleflowEngine(scenario);
   selectedUnitId = engine.getCommandableUnits()[0]?.id || engine.scenario.units[0]?.id;
-  dom.scenarioTitle.textContent = engine.scenario.metadata.title;
+  dom.scenarioTitle.textContent = "Decision Making Support with Course Of Action Evaluation";
   dom.mapSubtitle.textContent = `${engine.scenario.terrain.map.widthKm} km x ${engine.scenario.terrain.map.heightKm} km local grid`;
   dom.legend.innerHTML = legendItems
     .map(([label, color]) => `<span class="legend-item"><span class="legend-swatch" style="background:${color}"></span>${label}</span>`)
@@ -142,6 +152,10 @@ function wireEvents() {
   });
   dom.stepBtn.addEventListener("click", () => engine.step(engine.scenario.simulation.timeStepMinutes));
   dom.playBtn.addEventListener("click", () => (playing ? stopPlaying() : startPlaying()));
+  dom.timeScrubber.addEventListener("input", () => {
+    dom.scrubLabel.textContent = `T+${formatMinutes(Number(dom.timeScrubber.value || 0))}`;
+  });
+  dom.timeScrubber.addEventListener("change", () => seekToMinute(Number(dom.timeScrubber.value || 0)));
   dom.batchBtn.addEventListener("click", () => {
     stopPlaying();
     engine.runBatch();
@@ -194,6 +208,24 @@ function stopPlaying() {
   dom.runState.textContent = "Paused";
 }
 
+function seekToMinute(targetMinute) {
+  const step = Number(engine.scenario.simulation.timeStepMinutes || 10);
+  const horizon = Number(engine.scenario.simulation.horizonHours || 0) * 60;
+  const target = clamp(Math.round(targetMinute / step) * step, 0, horizon);
+  stopPlaying();
+  if (target < engine.elapsedMinutes) {
+    engine.reset();
+    selectedUnitId = engine.getCommandableUnits()[0]?.id || engine.scenario.units[0]?.id;
+  }
+  let guard = 0;
+  while (engine.elapsedMinutes < target && guard < 1000) {
+    engine.step(Math.min(step, target - engine.elapsedMinutes));
+    guard += 1;
+  }
+  renderAll();
+  needsDraw = true;
+}
+
 function renderAll() {
   if (!engine) return;
   renderHeader();
@@ -212,16 +244,48 @@ function renderHeader() {
   dom.clock.textContent = engine.clock;
   dom.elapsed.textContent = `T+${formatMinutes(engine.elapsedMinutes)}`;
   dom.unitCount.textContent = `${engine.scenario.units.length} units`;
+  const horizon = Number(engine.scenario.simulation.horizonHours || 0) * 60;
+  dom.timeScrubber.max = String(horizon);
+  dom.timeScrubber.step = String(engine.scenario.simulation.timeStepMinutes || 10);
+  if (document.activeElement !== dom.timeScrubber) {
+    dom.timeScrubber.value = String(engine.elapsedMinutes);
+  }
+  dom.scrubLabel.textContent = `T+${formatMinutes(engine.elapsedMinutes)} / ${formatMinutes(horizon)}`;
 }
 
 function renderMetrics() {
   const metrics = engine.getMetrics();
   dom.metrics.innerHTML = [
-    metric("Blue Utility", `${number(metrics.blueUtility)}%`),
-    metric("Objective Score", `${number(metrics.objectives.blueScore)}%`),
-    metric("Blue Preservation", `${number(metrics.Blue.preservation)}%`),
-    metric("Red Fires", `${number(metrics.redFiresSurvival)}%`),
-    metric("Blue C2", `${number(metrics.Blue.avgC2)}%`)
+    metric(
+      "Blue Utility",
+      `${number(metrics.blueUtility)}%`,
+      "Composite planning utility combining objective control, force preservation, readiness, logistics, and command-and-control.",
+      "metric-blue"
+    ),
+    metric(
+      "Objective Score",
+      `${number(metrics.objectives.blueScore)}%`,
+      "Weighted share of scenario objectives controlled or effectively contested by Blue at the current time.",
+      "metric-gold"
+    ),
+    metric(
+      "Blue Preservation",
+      `${number(metrics.Blue.preservation)}%`,
+      "Remaining Blue combat strength compared with the starting order of battle.",
+      "metric-green"
+    ),
+    metric(
+      "Red Fires",
+      `${number(metrics.redFiresSurvival)}%`,
+      "Surviving Red long-range fires, strike, and air-defense threat that can still influence Blue movement.",
+      "metric-red"
+    ),
+    metric(
+      "Blue C2",
+      `${number(metrics.Blue.avgC2)}%`,
+      "Average readiness of Blue command-and-control and support elements used to coordinate the force.",
+      "metric-teal"
+    )
   ].join("");
 }
 
@@ -451,7 +515,8 @@ async function loadScenarioFile(event) {
     stopPlaying();
     engine.loadScenario(scenario);
     selectedUnitId = engine.getCommandableUnits()[0]?.id || engine.scenario.units[0]?.id;
-    dom.scenarioTitle.textContent = engine.scenario.metadata?.title || "Battleflow Scenario";
+    dom.scenarioTitle.textContent = "Decision Making Support with Course Of Action Evaluation";
+    dom.mapSubtitle.textContent = `${engine.scenario.terrain.map.widthKm} km x ${engine.scenario.terrain.map.heightKm} km local grid`;
   } catch (error) {
     engine.recordEvent("System", "Scenario load failed", error.message);
     engine.emitChange();
@@ -481,6 +546,7 @@ function applyOntology() {
     stopPlaying();
     engine.loadScenario(scenario);
     selectedUnitId = engine.getCommandableUnits()[0]?.id || engine.scenario.units[0]?.id;
+    dom.mapSubtitle.textContent = `${engine.scenario.terrain.map.widthKm} km x ${engine.scenario.terrain.map.heightKm} km local grid`;
   } catch (error) {
     engine.recordEvent("System", "Ontology rejected", error.message);
     engine.emitChange();
@@ -589,20 +655,33 @@ function applyParsedOrder() {
   if (!parsedOrder) parseLocal();
   if (!parsedOrder) return;
   try {
-    engine.issueOrder(parsedOrder.unitId, {
-      task: parsedOrder.task,
-      destination: parsedOrder.destination,
-      startMinute: parsedOrder.startMinute,
-      arriveByMinute: parsedOrder.arriveByMinute,
-      speedKph: parsedOrder.speedKph,
-      directionDeg: parsedOrder.directionDeg,
-      onFailure: parsedOrder.onFailure
-    });
-    selectedUnitId = parsedOrder.unitId;
+    fillOrderFormFromParsed(parsedOrder);
+    dom.aiStatus.textContent = "Fields ready";
     setTab("orders");
   } catch (error) {
     dom.parsedOrder.textContent = error.message;
   }
+}
+
+function fillOrderFormFromParsed(order) {
+  const unit = engine.getUnit(order.unitId);
+  if (!unit) throw new Error(`Unknown unit id: ${order.unitId || "none"}`);
+  const destination = order.destination || {};
+  selectedUnitId = unit.id;
+  renderOrderForm();
+  dom.orderUnit.value = unit.id;
+  dom.orderTask.value = taskOption(order.task || "Move");
+  dom.orderX.value = number(destination.xKm ?? unit.location.xKm, 1);
+  dom.orderY.value = number(destination.yKm ?? unit.location.yKm, 1);
+  dom.orderStart.value = number(order.startMinute ?? engine.elapsedMinutes);
+  dom.orderArrive.value = number(order.arriveByMinute ?? engine.elapsedMinutes + 240);
+  dom.orderSpeed.value = number(order.speedKph ?? 8);
+  dom.orderDirection.value = number(order.directionDeg ?? 0);
+  dom.orderFailure.value = order.onFailure || "Hold current position and report";
+  renderSelectedUnit();
+  renderForceTree();
+  renderOrderQueue();
+  needsDraw = true;
 }
 
 function resizeCanvas() {
@@ -668,11 +747,13 @@ function drawMap() {
   const rect = dom.canvas.getBoundingClientRect();
   const t = fitTransform();
   ctx.clearRect(0, 0, rect.width, rect.height);
-  ctx.fillStyle = "#b5d7da";
+  ctx.fillStyle = "#9bd2dc";
   ctx.fillRect(0, 0, rect.width, rect.height);
   drawTerrain(t);
   drawGrid(t);
-  drawStartingAreas();
+  drawMapFeatures();
+  drawShoreline();
+  drawClippedToIsland(drawStartingAreas);
   drawObjectives();
   drawOrders();
   drawUnits();
@@ -681,6 +762,12 @@ function drawMap() {
 
 function drawTerrain(t) {
   const cellScale = t.scale * engine.scenario.terrain.map.cellKm;
+  ctx.save();
+  ctx.fillStyle = "#8fcbd6";
+  ctx.fillRect(t.left, t.top, t.width, t.height);
+  drawOceanTexture(t);
+  drawIslandPath();
+  ctx.clip();
   for (const row of engine.terrainGrid) {
     for (const cell of row) {
       const point = mapToCanvas({ xKm: cell.x, yKm: cell.y + 1 });
@@ -695,10 +782,14 @@ function drawTerrain(t) {
       }
     }
   }
+  drawHarborWater();
+  ctx.restore();
 }
 
 function drawGrid(t) {
   ctx.save();
+  drawIslandPath();
+  ctx.clip();
   ctx.strokeStyle = "rgba(38, 58, 52, 0.13)";
   ctx.lineWidth = 1;
   for (let x = 0; x <= t.map.widthKm; x += 1) {
@@ -717,9 +808,199 @@ function drawGrid(t) {
     ctx.lineTo(b.x, b.y);
     ctx.stroke();
   }
-  ctx.strokeStyle = "rgba(21, 31, 27, 0.65)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(t.left, t.top, t.width, t.height);
+  ctx.restore();
+}
+
+function drawOceanTexture(t) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.24)";
+  ctx.lineWidth = 1;
+  for (let y = t.top + 14; y < t.top + t.height; y += 28) {
+    ctx.beginPath();
+    for (let x = t.left; x <= t.left + t.width; x += 26) {
+      const wave = Math.sin((x + y) * 0.035) * 4;
+      if (x === t.left) ctx.moveTo(x, y + wave);
+      else ctx.lineTo(x, y + wave);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function islandBoundaryPoints(steps = 180) {
+  const map = engine.scenario.terrain.map;
+  const cx = map.widthKm * 0.5;
+  const cy = map.heightKm * 0.49;
+  const rx = map.widthKm * 0.485;
+  const ry = map.heightKm * 0.445;
+  const points = [];
+  for (let i = 0; i < steps; i += 1) {
+    const theta = i / steps * Math.PI * 2;
+    const harbor = Math.exp(-Math.pow(angleDelta(theta, -Math.PI / 2) / 0.34, 2)) * 0.25;
+    const westBite = Math.exp(-Math.pow(angleDelta(theta, Math.PI) / 0.42, 2)) * 0.08;
+    const northHeadland = Math.exp(-Math.pow(angleDelta(theta, Math.PI / 2) / 0.36, 2)) * 0.08;
+    const wobble =
+      Math.sin(theta * 3.2 + 0.45) * 0.045 +
+      Math.cos(theta * 5.4 - 0.2) * 0.035 +
+      Math.sin(theta * 8.1 + 1.3) * 0.018;
+    const radius = 1 + wobble + northHeadland - harbor - westBite;
+    points.push({
+      xKm: cx + Math.cos(theta) * rx * radius,
+      yKm: cy + Math.sin(theta) * ry * radius
+    });
+  }
+  return points;
+}
+
+function angleDelta(a, b) {
+  return Math.atan2(Math.sin(a - b), Math.cos(a - b));
+}
+
+function drawIslandPath() {
+  const points = islandBoundaryPoints();
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    const p = mapToCanvas(point);
+    if (index === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.closePath();
+}
+
+function drawClippedToIsland(drawer) {
+  ctx.save();
+  drawIslandPath();
+  ctx.clip();
+  drawer();
+  ctx.restore();
+}
+
+function drawShoreline() {
+  ctx.save();
+  drawIslandPath();
+  ctx.shadowColor = "rgba(18, 31, 26, 0.28)";
+  ctx.shadowBlur = 8;
+  ctx.strokeStyle = "rgba(36, 74, 61, 0.82)";
+  ctx.lineWidth = 2.4;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+  ctx.setLineDash([3, 5]);
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.55)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawHarborWater() {
+  const harbor = mapToCanvas({ xKm: 16.1, yKm: 3.9 });
+  const scale = (transform || fitTransform()).scale;
+  ctx.save();
+  ctx.fillStyle = "rgba(91, 174, 196, 0.82)";
+  ctx.beginPath();
+  ctx.ellipse(harbor.x, harbor.y, scale * 2.7, scale * 1.45, -0.08, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.42)";
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawMapFeatures() {
+  ctx.save();
+  drawIslandPath();
+  ctx.clip();
+  drawRiver([
+    { xKm: 12.5, yKm: 16.3 },
+    { xKm: 11.7, yKm: 14.2 },
+    { xKm: 10.2, yKm: 11.9 },
+    { xKm: 8.0, yKm: 9.0 },
+    { xKm: 5.5, yKm: 6.8 },
+    { xKm: 3.1, yKm: 5.2 }
+  ]);
+  drawRiver([
+    { xKm: 21.4, yKm: 15.0 },
+    { xKm: 19.6, yKm: 12.3 },
+    { xKm: 18.0, yKm: 9.2 },
+    { xKm: 16.8, yKm: 6.2 },
+    { xKm: 16.0, yKm: 4.1 }
+  ]);
+  drawRoad([
+    { xKm: 2.9, yKm: 5.0 },
+    { xKm: 6.0, yKm: 7.4 },
+    { xKm: 9.0, yKm: 11.0 },
+    { xKm: 12.4, yKm: 12.1 },
+    { xKm: 18.0, yKm: 13.0 },
+    { xKm: 20.0, yKm: 12.0 }
+  ]);
+  drawRoad([
+    { xKm: 9.0, yKm: 11.0 },
+    { xKm: 11.5, yKm: 8.5 },
+    { xKm: 14.2, yKm: 6.1 },
+    { xKm: 16.0, yKm: 4.0 },
+    { xKm: 18.6, yKm: 4.7 }
+  ]);
+  drawRoad([
+    { xKm: 6.0, yKm: 7.4 },
+    { xKm: 9.2, yKm: 7.2 },
+    { xKm: 12.5, yKm: 6.7 },
+    { xKm: 16.0, yKm: 4.0 }
+  ]);
+  drawMountainRange([
+    { xKm: 11.5, yKm: 14.4 },
+    { xKm: 14.0, yKm: 15.2 },
+    { xKm: 16.8, yKm: 14.4 },
+    { xKm: 19.2, yKm: 13.3 },
+    { xKm: 21.4, yKm: 12.4 }
+  ]);
+  ctx.restore();
+}
+
+function drawRiver(points) {
+  drawPolyline(points, "rgba(255, 255, 255, 0.68)", 5.5);
+  drawPolyline(points, "#238bb5", 2.4);
+}
+
+function drawRoad(points) {
+  drawPolyline(points, "rgba(255, 255, 255, 0.9)", 4.8);
+  drawPolyline(points, "#b97725", 1.9);
+}
+
+function drawPolyline(points, stroke, width) {
+  ctx.save();
+  ctx.strokeStyle = stroke;
+  ctx.lineWidth = width;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.beginPath();
+  points.forEach((point, index) => {
+    const p = mapToCanvas(point);
+    if (index === 0) ctx.moveTo(p.x, p.y);
+    else ctx.lineTo(p.x, p.y);
+  });
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawMountainRange(points) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(66, 84, 74, 0.78)";
+  ctx.fillStyle = "rgba(238, 243, 240, 0.74)";
+  ctx.lineWidth = 1.5;
+  for (const point of points) {
+    const p = mapToCanvas(point);
+    const s = (transform || fitTransform()).scale * 0.45;
+    ctx.beginPath();
+    ctx.moveTo(p.x - s, p.y + s * 0.72);
+    ctx.lineTo(p.x, p.y - s);
+    ctx.lineTo(p.x + s, p.y + s * 0.72);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+  }
+  ctx.fillStyle = "rgba(23, 32, 29, 0.72)";
+  ctx.font = "750 10px Inter, system-ui, sans-serif";
+  const label = mapToCanvas({ xKm: 14.1, yKm: 13.4 });
+  ctx.fillText("Central Highlands", label.x, label.y);
   ctx.restore();
 }
 

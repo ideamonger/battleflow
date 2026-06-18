@@ -1,7 +1,12 @@
-# Battleflow MVP
+# Battleflow Simulator V2
 
 Battleflow is a static browser wargame simulation engine seeded with Operation IRON TIDE.
 It runs without a database or backend storage.
+
+Version 2 keeps the original simulation mechanics and adds a more legible operations dashboard:
+an irregular island map, top-of-map playback controls with a progress scrubber, integrated
+written-order parsing in the Orders panel, metric callouts, an Instructions link, and the
+Battleflow Technologies copyright footer.
 
 ## Run
 
