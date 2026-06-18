@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Battleflow Operational Planning Primer</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body class="manual-body">
+    <main class="manual-page primer-page">
+      <header class="manual-header">
+        <a class="control-link" href="./index.html">Back to Battleflow</a>
+        <div>
+          <h1>Battleflow Operational Planning Primer</h1>
+          <p>How simulation logic and COA analysis support planning and execution.</p>
+        </div>
+      </header>
+
+      <section class="manual-section primer-lead">
+        <p>
+          Battleflow helps planners reason through conflict as an interaction between two adaptive
+          forces in terrain, time, and uncertainty. It does not claim to predict combat with perfect
+          fidelity. Its purpose is more practical: give staff and decision-makers a transparent way to
+          convert an order of battle, a terrain model, and competing courses of action into a wargame
+          that exposes timing, risk, decision points, and branch requirements before execution.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>From Laydown to Executable State</h2>
+        <p>
+          The simulation starts from a human-readable ontology. Blue and Red units are organized by
+          hierarchy, location, frontage, depth, subunit count, weapons, supplies, morale, readiness,
+          and initial orders. Terrain is represented as a grid with land, water, and air conditions:
+          altitude, accessibility, soil, use, sea state, currents, wind, visibility, and weather. This
+          turns a planning packet into a shared operational state that can be inspected, edited, and
+          challenged by both players.
+        </p>
+        <p>
+          Once the initial laydown is set, Battleflow enforces feasible starting areas, then lets
+          players issue orders at the chosen command echelon or above. Each order specifies where to
+          go, when to start, when to arrive, what to do, and what fallback action to take if timing
+          fails. This keeps the simulation tied to executable command logic rather than abstract
+          movement alone.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>Battleflow Simulation Logic</h2>
+        <p>
+          At each time step, units move toward assigned destinations, consume supplies, and interact
+          with terrain. Movement speed is shaped by mobility, readiness, morale, fuel, slope-like
+          accessibility effects, sea state, and air/weather conditions. Engagements are resolved with
+          transparent relative scores using weapon range, rate of fire, destructive power, ammunition,
+          attacker readiness, target cover, and terrain modifiers.
+        </p>
+        <p>
+          The engine updates strength, readiness, morale, ammunition, fuel, sustainment, objective
+          control, and event logs. The result is not a black-box adjudication. Planners can see why a
+          unit slowed, why a beachhead became contested, why a fire unit remained dangerous, or why a
+          missed timing requirement triggered a fallback branch.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>Course of Action Analysis</h2>
+        <p>
+          Battleflow combines the running simulation with COA comparison. In the default Operation
+          IRON TIDE scenario, COAs represent three planning postures: a high-tempo airfield thrust, a
+          lodgment-first maximin option, and a hedged two-axis pressure option. Each is evaluated
+          against Red responses: likely, most dangerous, deceptive, and adaptive.
+        </p>
+        <p>
+          The COA panel calculates expected value, worst-case floor, worst regret, risk, and composite
+          score. This gives planners three complementary views: expected utility for opportunity,
+          maximin logic for survivability, and minimax-regret logic for robustness when Red behavior
+          is uncertain. As the simulation changes the operational state, COA scores change too, tying
+          the analysis to execution conditions rather than a static slide.
+        </p>
+      </section>
+
+      <section class="manual-section">
+        <h2>Support to Planning and Execution</h2>
+        <div class="primer-grid">
+          <div>
+            <h3>Planning</h3>
+            <p>
+              Battleflow turns assumptions into testable variables: force placement, logistics,
+              readiness, terrain friction, fires survival, C2 resilience, and objective value. This
+              helps a staff identify fragile assumptions, compare branches, and choose the next best
+              wargame test.
+            </p>
+          </div>
+          <div>
+            <h3>Execution</h3>
+            <p>
+              During execution rehearsal, Battleflow highlights timing failures, contested objectives,
+              degradation of combat power, logistics stress, and changes in Red threat survival. These
+              indicators support decision points such as continue, pause, shift main effort, reinforce,
+              defend, or withdraw.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="manual-section">
+        <h2>Bottom Line</h2>
+        <p>
+          Battleflow is useful because it connects three things that are often separated: a concrete
+          order of battle, a terrain-aware simulation, and game-theoretic COA analysis. That connection
+          lets planners see whether a plan remains coherent after Red acts, terrain interferes,
+          logistics degrade, and timing slips. The system supports operational judgment by making
+          assumptions visible, choices comparable, and branches easier to rehearse before the moment
+          of decision.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

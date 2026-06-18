@@ -699,6 +699,35 @@ tr:last-child td {
   font-weight: 750;
 }
 
+.primer-page {
+  width: min(900px, calc(100vw - 24px));
+}
+
+.primer-lead p {
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--dark);
+}
+
+.primer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.primer-grid > div {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 12px;
+}
+
+.primer-grid h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
 @media (max-width: 1160px) {
   .topbar {
     grid-template-columns: 1fr;
@@ -765,6 +794,10 @@ tr:last-child td {
   }
 
   .event-log {
+    grid-template-columns: 1fr;
+  }
+
+  .primer-grid {
     grid-template-columns: 1fr;
   }
 }
